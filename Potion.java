@@ -14,4 +14,8 @@ public class Potion extends Item {
         return increaseHp;
     }
 
+    public void print(){
+        System.out.println(super.getQualification());
+    }
+
 }

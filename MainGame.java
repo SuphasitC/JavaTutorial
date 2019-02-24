@@ -80,8 +80,10 @@ public class MainGame {
                 System.out.println("===================================================");
                 System.out.println("--------------- Item  Qualification ---------------");
                 System.out.println("===================================================");
-                System.out.println("Potion = " + new Potion().getQualification());
-                System.out.println("ExpCard = " + new ExpCard().getQualification());
+                System.out.print("Potion = ");
+                new Potion().print();
+                System.out.print("ExpCard = ");
+                new ExpCard().print();
                 try{Thread.sleep(2000);}catch(InterruptedException ex){Thread.currentThread().interrupt();}
 
             }

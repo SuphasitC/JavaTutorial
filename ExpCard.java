@@ -14,4 +14,7 @@ public class ExpCard extends Item {
         return increaseExp;
     }
 
+    public void print(){
+        System.out.println(super.getQualification());
+    }
 }
