@@ -1,117 +1,91 @@
 import java.io.*;
-import java.util.Scanner;
-import java.util.Random;
+import java.util.*;
 
 public class Novice {
-    private String name;
-    private int atkDamage;
     private int level;
     private int exp;
     private int hp;
-    private int maxEXP;
-    public Bag bag;
+    private int maxHp;
+    private int maxExp;
+    private Bag bag;
     
-    public Novice(String _name){                    
+    public Novice(){                    
         level = 1;
         exp = 0;
-        maxEXP = 50;
-        hp = 100;
-        name = _name;
+        maxExp = 50;
+        hp = 100; 
+        maxHp = 100;
         bag = new Bag(40);
+        // skill = new ArrayList<String>();
+        // skill.add("NormalAttack");
+    }
+    public void setAll(Novice changeClass){
+        level = changeClass.getLevel();
+        exp = changeClass.getExp();
+        hp = changeClass.getHp() + 150;
+        maxHp = changeClass.getMaxHp() + 150;
+        maxExp = changeClass.getMaxExp();
+        bag = changeClass.getBag();
     }
 
-    public void levelUp(){      //method of level up
-        this.level++;
-        this.maxEXP = this.level * 50;
-        this.hp = 100;
-        this.exp = 0;
+    public void levelUp(){
+        level++;
+        maxExp = level * 50;
+        hp = maxHp;
+        exp = 0;
+        System.out.println("***********--===*****Level Up!*****===--***********");
+        System.out.println("Now your level is " + level);
     }
 
-    public void attack() {                //Bot to get level up automatically
-        int monsterATK;
-        int expFromMonster;
-        int attackTime;
-        int numberOfMonsters;
-        Scanner input = new Scanner(System.in);
-
-        System.out.print("Enter number of monster: ");
-        numberOfMonsters = input.nextInt();
-
-        while(numberOfMonsters != 0){       //How many monsters do you want to get your Avatar attack?
-            attackTime = (int)(Math.random() * 1999 + 1);
-            monsterATK = (int)(Math.random() * 49 + 1);
-            expFromMonster = (int)(Math.random() * 99 + 1);
-            this.hp -= monsterATK;
-            System.out.println("---------------------------------------------------");
-            System.out.println("Attacking...");
-
-            try{                //delay of attacking monsters
-                Thread.sleep(attackTime);
-            }
-            catch(InterruptedException ex){
-                Thread.currentThread().interrupt();
-            }
-
-            if(this.hp > 0){            //if your Avatar is not die
-                System.out.println("Monster has been slain.");
-                System.out.println("EXP gain : " + "+" + expFromMonster);
-                this.exp += expFromMonster;
-
-                if(this.exp >= this.maxEXP)
-                    System.out.println("EXP : " + this.maxEXP + "/" + this.maxEXP);
-                else   
-                    System.out.println("EXP : " + this.exp + "/" + this.maxEXP);
-
-                System.out.println("hp : " + this.hp);
-                bag.putItemToBag();
-                System.out.println("You got " + bag.items.get(bag.slotUse - 1).itemName);
-                
-                if(this.hp <= 40){       //if your Avatar's HP lower than 40 , take the potion to increase HP
-                    potion();
-                }
-                
-                bag.checkSlotLeft();
-                
-                try{
-                    Thread.sleep(1000);
-                }
-                catch(InterruptedException ex){
-                    Thread.currentThread().interrupt();
-                }
-                
-                if(this.exp >= this.maxEXP){        //if your Avatar's level is up
-                    this.levelUp();
-                    System.out.println("***********--===*****Level Up!*****===--***********");
-                    System.out.println("Now your level is " + this.level);
-                }
-            }
-            else{               // your Avatar is die
-                this.die();
-                break;          //break the loop of bot
-            }
-
-            try{        //pause the process for getting player look at the Avatar's status after killing the monster
-                Thread.sleep(1500);
-            }
-            catch(InterruptedException ex){
-                Thread.currentThread().interrupt();
-            }
-            numberOfMonsters--;
-        }
+    public Bag getBag(){
+        return bag;
     }
 
-    public void potion(){        //method of getting heal
+    public int getMaxHp(){
+        return maxHp;
+    }
+
+    public int getHp(){
+        return hp;
+    }
+
+    public int getLevel(){
+        return level;
+    }
+
+    public int getExp(){
+        return exp;
+    }
+
+    public int getMaxExp(){
+        return maxExp;
+    }
+
+    public void attacked(int monsterATK){
+        hp -= monsterATK;
+    }
+
+    public void receiveExp(int expFromMonster){
+        exp += expFromMonster;
+    }
+
+    public void usePotion(String job){
         int potionInBag = bag.getPotion();
+        int factor = 100;
+        Item item = new Potion();
         if(potionInBag > 0){
-            if((this.hp + 60) < 100){       //if your Avatar's HP doesn't lower than 30
-                System.out.println("You drink the potion, HP + 60");
-                bag.usePotion();
-                hp += 60;
+            if(job.equals("Novice")){
+                factor = 0;
+            }
+            if((hp + ((Potion)item).getIncreaseHp() < maxHp)){  
+                System.out.println("You drink the potion, HP + " + (((Potion)item).getIncreaseHp() + factor));
+                bag.minusPotionInBag();
+                hp += ((Potion)item).getIncreaseHp() + factor;
             }
             else{
-                System.out.println("You drink the potion, HP + " + (100 - this.hp));
-                bag.usePotion();
-                hp = 100;
+                System.out.println("You drink the potion, HP + " + (maxHp - hp));
+                bag.minusPotionInBag();
+                hp = maxHp;
             }
         }
         else {
@@ -119,48 +93,50 @@ public class Novice {
         }
     }
 
-    private void die(){         // your Avatar is die
-        int expDecrease;
-
-        System.out.println("Your character die, please wait for 10 seconds.");
-        expDecrease = level * 5;
-       
-        if((this.exp - expDecrease) > 0)    //minus exp
-            this.exp -= expDecrease;
-        else
-            this.exp = 0;
-       
-        System.out.println("Your EXP decrease for " + expDecrease);
-
-        for(int i = 10; i > 0 ; i--){       //wait for 10 seconds to respawn
-            System.out.println(i + "...");
-            try{
-                Thread.sleep(1000);
+    public void useExpCard(){
+        int expCardInBag = bag.getExpCard();
+        Item item = new ExpCard();
+        if(expCardInBag > 0){
+            if((exp + ((ExpCard)item).getIncreaseExp()) < maxExp){  
+                System.out.println("You use expcard, exp + " + ((ExpCard)item).getIncreaseExp());
+                bag.minusExpCardInBag();
+                exp += ((ExpCard)item).getIncreaseExp();
             }
-            catch(InterruptedException ex){
-                Thread.currentThread().interrupt();
+            else if((exp + ((ExpCard)item).getIncreaseExp()) >= maxExp){
+                System.out.println("You use expcard, exp + " + (maxExp - ((ExpCard)item).getIncreaseExp()));
+                bag.minusExpCardInBag();
+                levelUp();
             }
         }
-        
-        System.out.println("Your HP is recovered!");
-        this.hp = 100;
+        else {
+            System.out.println("You not have enough expcard.");
+        }
     }
 
-    public void status() {             //show Avatar's Status
-        System.out.println("***************************************************");    
-        System.out.println("------------------CharacterStatus------------------");
-        System.out.println("***************************************************");
-        System.out.println("Name : " + this.name);
-        System.out.println("HP : " + this.hp);
-        System.out.println("Level : " + this.level);
-        System.out.println("EXP : " + this.exp + "/" + this.maxEXP);
-        System.out.println("***************************************************");
+    public void setHpAfterDie(){
+        hp = 100;
+    }
 
-        try{
-            Thread.sleep(3000);
+    public void setExpAfterDie(int expDecrease){
+        if(exp - expDecrease > 0){
+            exp -= expDecrease;
         }
-        catch(InterruptedException ex){
-            Thread.currentThread().interrupt();
+        else{
+            exp = 0;
         }
+    }
+
+    public ArrayList<String> getSkill(){
+        if(level >= 3)
+            return getSkill();
+        else
+            return new ArrayList<String>();
+    }
+
+    public int attackSkill(String skill){
+        if(level >= 3)
+            return attackSkill(skill);
+        else
+            return 0;
     }
 }
