@@ -1,52 +1,25 @@
-import java.io.*;
-import java.util.*;
+import javax.swing.JLabel;
 
-public class Novice {
-    private int level;
-    private int exp;
-    private int hp;
-    private int maxHp;
-    private int maxExp;
-    private Bag bag;
-    
-    public Novice(){                    
+public class Novice extends Alive{
+    protected int level;
+    protected int exp;
+    protected int maxExp;
+    protected int monstersHaveAttacked;
+    protected String job;
+    protected Bag bag;
+    protected String picture;
+
+    public Novice(String _name){
+        super(_name);
+        super.hp = 100;
+        super.attackDamage = 10;
         level = 1;
         exp = 0;
-        maxExp = 50;
-        hp = 100; 
         maxHp = 100;
+        maxExp = 100;
+        monstersHaveAttacked = 0;
+        job = "Novice";
         bag = new Bag(40);
-        // skill = new ArrayList<String>();
-        // skill.add("NormalAttack");
-    }
-    public void setAll(Novice changeClass){
-        level = changeClass.getLevel();
-        exp = changeClass.getExp();
-        hp = changeClass.getHp() + 150;
-        maxHp = changeClass.getMaxHp() + 150;
-        maxExp = changeClass.getMaxExp();
-        bag = changeClass.getBag();
-    }
-
-    public void levelUp(){
-        level++;
-        maxExp = level * 50;
-        hp = maxHp;
-        exp = 0;
-        System.out.println("***********--===*****Level Up!*****===--***********");
-        System.out.println("Now your level is " + level);
-    }
-
-    public Bag getBag(){
-        return bag;
-    }
-
-    public int getMaxHp(){
-        return maxHp;
-    }
-
-    public int getHp(){
-        return hp;
     }
 
     public int getLevel(){
@@ -61,82 +34,117 @@ public class Novice {
         return maxExp;
     }
 
-    public void attacked(int monsterATK){
-        hp -= monsterATK;
+    public int getMonsterHasAttacked(){
+        return monstersHaveAttacked;
     }
 
-    public void receiveExp(int expFromMonster){
-        exp += expFromMonster;
+    public String getJob(){
+        return job;
     }
 
-    public void usePotion(String job){
-        int potionInBag = bag.getPotion();
-        int factor = 100;
-        Item item = new Potion();
-        if(potionInBag > 0){
-            if(job.equals("Novice")){
-                factor = 0;
-            }
-            if((hp + ((Potion)item).getIncreaseHp() < maxHp)){  
-                System.out.println("You drink the potion, HP + " + (((Potion)item).getIncreaseHp() + factor));
-                bag.minusPotionInBag();
-                hp += ((Potion)item).getIncreaseHp() + factor;
-            }
-            else{
-                System.out.println("You drink the potion, HP + " + (maxHp - hp));
-                bag.minusPotionInBag();
-                hp = maxHp;
-            }
-        }
-        else {
-            System.out.println("You not have enough potion.");
-        }
+    public Bag getBag(){
+        return bag;
     }
 
-    public void useExpCard(){
-        int expCardInBag = bag.getExpCard();
-        Item item = new ExpCard();
-        if(expCardInBag > 0){
-            if((exp + ((ExpCard)item).getIncreaseExp()) < maxExp){  
-                System.out.println("You use expcard, exp + " + ((ExpCard)item).getIncreaseExp());
-                bag.minusExpCardInBag();
-                exp += ((ExpCard)item).getIncreaseExp();
-            }
-            else if((exp + ((ExpCard)item).getIncreaseExp()) >= maxExp){
-                System.out.println("You use expcard, exp + " + (maxExp - ((ExpCard)item).getIncreaseExp()));
-                bag.minusExpCardInBag();
-                levelUp();
-            }
-        }
-        else {
-            System.out.println("You not have enough expcard.");
-        }
+    public String getPiture(){
+        return "novice.jpg";
     }
 
-    public void setHpAfterDie(){
-        hp = 100;
+    public boolean usePotion(){
+        int idxOfPotion = 0;
+        boolean useSuccess = false;
+
+        for(Item item : bag.getItems()){
+            if(item.getName().startsWith("Potion")){
+                bag.setSlotUse(-1);
+                bag.getItems().remove(idxOfPotion);
+                plusHp(item.getValueOfItem());
+                useSuccess = true;
+                break;
+            }
+            idxOfPotion++;
+        }
+        return useSuccess;
     }
 
-    public void setExpAfterDie(int expDecrease){
-        if(exp - expDecrease > 0){
-            exp -= expDecrease;
+    public boolean useExpCard(){
+        int idxOfExpCard = 0;
+        boolean useSuccess = false;
+
+        for(Item item : bag.getItems()){
+            if(item.getName().startsWith("ExpCard")){
+                bag.setSlotUse(-1);
+                bag.getItems().remove(idxOfExpCard);
+                plusExp(item.getValueOfItem());
+                useSuccess = true;
+                break;
+            }
+            idxOfExpCard++;
         }
-        else{
+        return useSuccess;
+    }
+
+    public boolean attack(Monster monster, JLabel noviceHp, JLabel nowAttacking, JLabel monAttackedHp){
+        while(this.isAlive && monster.getIsAlive()){
+            //GUI Update
+            nowAttacking.setText("Now Attacking : " + monster.getName());
+            nowAttacking.paintImmediately(nowAttacking.getVisibleRect());
+            monAttackedHp.setText("HP : " + monster.getHp() + "/" + monster.getMaxHp());
+            monAttackedHp.paintImmediately(monAttackedHp.getVisibleRect());
+            noviceHp.setText("HP : " + this.hp + "/" + this.maxHp);
+            noviceHp.paintImmediately(noviceHp.getVisibleRect());
+            this.hp -= monster.getAttackDamage();
+            monster.setHp(-this.attackDamage);
+            try{Thread.sleep(1000);}catch(InterruptedException ex){Thread.currentThread().interrupt();}
+
+
+            if(this.hp <= 0){
+                this.die();
+                this.lostExp();
+                return false;
+            }
+            else if(monster.getHp() <= 0){
+                monster.die();
+                this.monstersHaveAttacked += 1;
+                plusExp(monster.getExpGain());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void lostExp(){
+        int expLost = (int)(Math.random() * 100);
+
+        if(exp - expLost <= 0){
             exp = 0;
         }
+        else
+            exp -= expLost;
     }
 
-    public ArrayList<String> getSkill(){
-        if(level >= 3)
-            return getSkill();
-        else
-            return new ArrayList<String>();
+    public void plusExp(int expPlus){
+        if(this.exp + expPlus < maxExp)
+            this.exp += expPlus;
+        else{
+            this.exp = 0;
+            this.levelUp();
+        }
+    }
+    
+    public void plusHp(int hpPlus){
+        if(this.hp + hpPlus <= this.maxHp)
+            this.hp += hpPlus;
+        else{
+            this.hp = this.maxHp;
+        }
     }
 
-    public int attackSkill(String skill){
-        if(level >= 3)
-            return attackSkill(skill);
-        else
-            return 0;
+    public void levelUp(){
+        this.level += 1;
+        this.maxHp += 5;
+        this.maxExp += 20;
+        this.attackDamage += 1;
+        this.hp = this.maxHp;
     }
 }

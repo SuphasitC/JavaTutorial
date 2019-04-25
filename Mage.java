@@ -1,33 +1,28 @@
-import java.io.*;
 import java.util.*;
-
 public class Mage extends Novice{
-    private ArrayList<String> skill;
-
-    public Mage(Novice changeClass){
-        super();
-        super.setAll(changeClass);
-        skill = new ArrayList<String>();
-        skill.add("SoulStrike");
-        skill.add("FireBlot");
-        skill.add("LightningBolt");
+    private ArrayList<String> skills;
+    
+    public Mage(Novice _novice){
+        super(_novice.name);
+        super.level = _novice.level;
+        super.maxExp = _novice.maxExp;
+        super.monstersHaveAttacked = _novice.monstersHaveAttacked;
+        super.bag = _novice.bag;
+        super.maxHp = _novice.maxHp + 10;
+        super.hp = super.maxHp;
+        super.attackDamage = _novice.attackDamage + 25;
+        super.job = "Mage";
+        skills = new ArrayList<String>();
+        skills.add("SoulStrike");
+        skills.add("FireBlot");
+        skills.add("LightningBolt");
     }
 
-    public int attackSkill(String skills){
-        if(skills.equals("SoulStrike")){
-            return 1000;
-        }
-        else if(skills.equals("FireBlot")){
-            return 1500;
-        }
-        else if(skills.equals("LightningBolt")){
-            return 2000;
-        }
-        return 0;
-    }
+    public ArrayList<String> getSkills(){
+        return skills;
+    }  
 
-    public ArrayList<String> getSkill(){
-        return skill;
+    public String getPiture(){
+        return "mage.jpg";
     }
-
 }

@@ -1,33 +1,28 @@
-import java.io.*;
 import java.util.*;
-
 public class Archer extends Novice{
-    private ArrayList<String> skill;
-
-    public Archer(Novice changeClass){
-        super();
-        super.setAll(changeClass);
-        skill = new ArrayList<String>();
-        skill.add("ElementalArrows");
-        skill.add("ChargeArrow");
-        skill.add("AnkleSnare");
+    private ArrayList<String> skills;
+    
+    public Archer(Novice _novice){
+        super(_novice.name);
+        super.level = _novice.level;
+        super.maxExp = _novice.maxExp;
+        super.monstersHaveAttacked = _novice.monstersHaveAttacked;
+        super.bag = _novice.bag;
+        super.maxHp = _novice.maxHp + 20;
+        super.hp = super.maxHp;
+        super.attackDamage = _novice.attackDamage + 15;
+        super.job = "Archer";
+        skills = new ArrayList<String>();
+        skills.add("ElementalArrows");
+        skills.add("ChargeArrow");
+        skills.add("AnkleSnare");
     }
 
-    public int attackSkill(String skills){
-        if(skills.equals("ElementalArrows")){
-            return 1000;
-        }
-        else if(skills.equals("ChargeArrow")){
-            return 1500;
-        }
-        else if(skills.equals("AnkleSnare")){
-            return 2000;
-        }
-        return 0;
-    }
+    public ArrayList<String> getSkills(){
+        return skills;
+    }  
 
-    public ArrayList<String> getSkill(){
-        return skill;
+    public String getPiture(){
+        return "archer.jpg";
     }
-
 }
